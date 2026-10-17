@@ -1,0 +1,27 @@
+# Android / Gradle
+.gradle/
+**/build/
+**/local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE and machine state
+.idea/
+*.iml
+.DS_Store
+
+# Java / Maven
+**/target/
+
+# Local configuration, credentials, and signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+
+# Generated reports
+**/test-results/
+**/surefire-reports/

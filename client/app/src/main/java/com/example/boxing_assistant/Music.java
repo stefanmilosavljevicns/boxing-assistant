@@ -98,26 +98,34 @@ public class Music extends Fragment implements RecyclerViewForMusic.OnNoteListen
                     if (data.getClipData() != null) {
                         for (int index = 0; index < data.getClipData().getItemCount(); index++) {
                             Uri uri = data.getClipData().getItemAt(index).getUri();
-                            mc = new MusicEntity();
-                            mc.setMusicurl(uri.toString());
-                            mc.setMusicname(DocumentFile.fromSingleUri(getContext(), uri).getName());
-                            mdb.mainDao().insert(mc);
-                            list.add(mc);
-                            adapter.notifyDataSetChanged();
+                            saveSelectedAudio(data, uri);
                         }
 
                     } else {
                         Uri uri = data.getData();
-                        mc = new MusicEntity();
-                        mc.setMusicurl(uri.toString());
-                        mc.setMusicname(DocumentFile.fromSingleUri(getContext(), uri).getName());
-                        mdb.mainDao().insert(mc);
-                        list.add(mc);
-                        adapter.notifyDataSetChanged();
+                        saveSelectedAudio(data, uri);
 
                     }
                 }
             }
+        }
+    }
+
+    private void saveSelectedAudio(Intent result, Uri uri) {
+        try {
+            int readPermission = result.getFlags() & Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            int persistablePermission = result.getFlags() & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
+            if (readPermission != 0 && persistablePermission != 0) {
+                requireContext().getContentResolver().takePersistableUriPermission(uri, readPermission);
+            }
+            mc = new MusicEntity();
+            mc.setMusicurl(uri.toString());
+            mc.setMusicname(DocumentFile.fromSingleUri(getContext(), uri).getName());
+            mdb.mainDao().insert(mc);
+            list.add(mc);
+            adapter.notifyDataSetChanged();
+        } catch (SecurityException exception) {
+            Toast.makeText(getContext(), "The selected audio file is no longer accessible.", Toast.LENGTH_SHORT).show();
         }
     }
 

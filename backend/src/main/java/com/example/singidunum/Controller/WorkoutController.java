@@ -3,20 +3,22 @@ package com.example.singidunum.Controller;
 import com.example.singidunum.Model.Workout;
 import com.example.singidunum.Repository.WorkoutRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1")
 public class WorkoutController {
-    @Autowired
-    private WorkoutRepository workoutRepository;
+    private final WorkoutRepository workoutRepository;
+
+    public WorkoutController(WorkoutRepository workoutRepository) {
+        this.workoutRepository = workoutRepository;
+    }
 
     @GetMapping("/getAllWorkouts")
     //@RolesAllowed("admin")
@@ -32,17 +34,18 @@ public class WorkoutController {
 
     @PostMapping("/addWorkout")
     //@RolesAllowed({"user", "admin"})
-    public ResponseEntity<Workout> save(@RequestBody Workout workout){
-        return ResponseEntity.ok(workoutRepository.save(workout));
+    public ResponseEntity<Workout> save(@Valid @RequestBody Workout workout){
+        Workout saved = workoutRepository.save(workout);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
     @DeleteMapping("/deleteWorkout/{name}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("name") String id) {
-        try {
-            workoutRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> deleteUser(@PathVariable("name") String name) {
+        Workout workout = workoutRepository.findByName(name);
+        if (workout == null) {
+            return ResponseEntity.notFound().build();
         }
+        workoutRepository.delete(workout);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/getAllNames")
@@ -51,12 +54,11 @@ public class WorkoutController {
     }    
 
     @PutMapping("/updateWorkout/{name}")
-    public ResponseEntity<Workout> updateUsers(@PathVariable("name") String id, @RequestBody Workout workout) {
-        Optional<Workout> userData = Optional.ofNullable(workoutRepository.findByName(id));
+    public ResponseEntity<Workout> updateUsers(@PathVariable("name") String name, @Valid @RequestBody Workout workout) {
+        Optional<Workout> userData = Optional.ofNullable(workoutRepository.findByName(name));
         if (userData.isPresent()) {
             Workout user = userData.get();
             user.setName(workout.getName());
-            user.setId(workout.getId());
             user.setMoves(workout.getMoves());
             user.setRestMin(workout.getRestMin());
             user.setRestSec(workout.getRestSec());
