@@ -1,31 +1,32 @@
-version: "3.3"
 services:
-    singidunum-rest:
-      image: razvoj.jar:latest
-      restart: on-failure
-      environment:
-        - "spring.data.mongodb.uri=mongodb://root:test@singidunum-mongo:27056/test?authSource=admin&authMechanism=SCRAM-SHA-1"
-      ports:
-        - "9093:9093"
-      stdin_open: true
-      tty: true
-      depends_on:
-        - singidunum-mongo
-    singidunum-mongo:
-      image: mongo:4.2.0
-      command: mongod --port 27056
-      ports:
-        - "27056:27056"
-      environment:
-        - MONGO_INITDB_ROOT_USERNAME=root
-        - MONGO_INITDB_ROOT_PASSWORD=test
-        - MONGO_INITDB_DATABASE=test
-      volumes:
-        - mongodb_data_container:/data/db
-      healthcheck:
-        test: echo 'db.runCommand("ping").ok' | mongo localhost:27056/test --quiet
-        interval: 10s
-        timeout: 10s
-        retries: 3
+  singidunum-rest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      SERVER_PORT: 9093
+      MONGODB_URI: "mongodb://${MONGO_INITDB_ROOT_USERNAME:-boxing_dev}:${MONGO_INITDB_ROOT_PASSWORD:-boxing_dev_password}@singidunum-mongo:27017/boxing_assistant?authSource=admin"
+    ports:
+      - "127.0.0.1:9093:9093"
+    depends_on:
+      singidunum-mongo:
+        condition: service_healthy
+  singidunum-mongo:
+    image: mongo:4.2.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:-boxing_dev}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:-boxing_dev_password}"
+      MONGO_INITDB_DATABASE: boxing_assistant
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongodb_data_container:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --quiet --username \"$${MONGO_INITDB_ROOT_USERNAME}\" --password \"$${MONGO_INITDB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval \"db.adminCommand('ping').ok\""]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
 volumes:
   mongodb_data_container:

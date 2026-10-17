@@ -10,7 +10,6 @@ import java.util.List;
 
 
 public interface WorkoutRepository extends MongoRepository<Workout, String> {
-    @Query(fields = "{'name': 0}")
     Workout findByName(String name);
 
     @Aggregation(pipeline = { "{ '$group': { '_id' : '$name' } }" })

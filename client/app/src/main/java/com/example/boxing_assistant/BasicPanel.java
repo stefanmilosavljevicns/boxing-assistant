@@ -1,28 +1,21 @@
 package com.example.boxing_assistant;
 
-import android.Manifest;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.example.boxing_assistant.databinding.FragmentBasicPanelBinding;
 
-import java.util.List;
-
-import pub.devrel.easypermissions.AppSettingsDialog;
-import pub.devrel.easypermissions.EasyPermissions;
 
 
-public class BasicPanel extends Fragment implements EasyPermissions.PermissionCallbacks {
+public class BasicPanel extends Fragment {
 
     FragmentBasicPanelBinding binding;
     View view;
@@ -97,38 +90,6 @@ public class BasicPanel extends Fragment implements EasyPermissions.PermissionCa
     }
 
     private void openMusic() {
-        String[] perm = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-        if (EasyPermissions.hasPermissions(getContext(), perm)) {
-            Navigation.findNavController(view).navigate((R.id.action_basicPanel_to_music));
-        } else {
-            EasyPermissions.requestPermissions(this, "We need this permissions for accesing music inside smart phone",
-                    123, perm);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
-    }
-
-    @Override
-    public void onPermissionsGranted(int requestCode, @NonNull List<String> perms) {
-        switch (requestCode) {
-            case 123:
-                Navigation.findNavController(view).navigate((R.id.action_basicPanel_to_music));
-                break;
-
-
-        }
-    }
-
-    @Override
-    public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
-        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            new AppSettingsDialog.Builder(this).build().show();
-        } else {
-            Toast.makeText(getContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
-        }
+        Navigation.findNavController(view).navigate(R.id.action_basicPanel_to_music);
     }
 }
